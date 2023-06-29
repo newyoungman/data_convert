@@ -1,0 +1,77 @@
+`timescale 1ns/1ps
+
+module data_convert_tb();
+
+	reg RSTN;
+	reg CLK_30MHz;
+	reg DIN;
+	reg [1:0]MODE;
+	reg CLK_48MHz;
+	wire CLK_OUT;
+	wire VALID;
+	wire DOUT_A;
+	wire DOUT_B;
+	wire DOUT_C;
+  
+  // Instantiate the data_convert module
+  data_convert dut (
+    .RSTN(RSTN),
+    .CLK_30MHz(CLK_30MHz),
+    .DIN(DIN),
+    .MODE(MODE),
+    .CLK_48MHz(CLK_48MHz),
+    .CLK_OUT(CLK_OUT),
+    .VALID(VALID),
+    .DOUT_A(DOUT_A),
+    .DOUT_B(DOUT_B),
+    .DOUT_C(DOUT_C)
+  );
+  
+
+  
+  // Initialize inputs
+  initial begin
+    RSTN = 1'b0;
+    CLK_30MHz = 1'b0;
+    DIN = 1'b0;
+    CLK_48MHz = 1'b0;
+    MODE = 2'b00;
+    
+    // Apply reset
+    #49.995;
+    RSTN = 1'b1;
+    
+    repeat (10) begin
+        #33.33;
+        DIN = 1'b1;
+    end
+    // Start generating input data
+    repeat (720) begin
+      repeat(8) begin
+      #33.33; 
+      DIN = {$random} % 2;
+      end
+      #33.33;
+      DIN = 1'b0;
+      #33.33;
+      DIN = 1'b1;
+    end
+    
+    // Wait for invalid data
+    repeat (20) begin
+      #33.33; // 1 / 30MHz = 33.33ns
+      DIN = 1'b0;
+    end
+    
+    // Add additional test cases here
+    
+    #200;
+    $finish;
+  end
+
+  // Generate 30MHz clock 
+  always #16.665 CLK_30MHz = ~CLK_30MHz;
+  
+  // Generate 48MHz clock 
+  always #10.42 CLK_48MHz = ~CLK_48MHz;
+endmodule
